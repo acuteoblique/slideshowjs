@@ -52,7 +52,9 @@ if (typeof slideshowjs === "undefined") {
                             removeCurrent();
                             updateFromIdx();
                         }
-                        updateEntryCount();
+                        else {
+                            updateEntryCount();
+                        }
                     }
                 };
                 return full;
@@ -66,6 +68,9 @@ if (typeof slideshowjs === "undefined") {
                     
                 if (entries && entries.length && !anyEntries) {
                     updateFromIdx();
+                }
+                else {
+                    updateEntryCount();
                 }
                 console.log("After processing document: " + entries.length);
                 var nexts = toArray(document.querySelectorAll("a")).filter(function(a) { return a.textContent.toLowerCase().trim() === "next"; });
