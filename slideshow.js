@@ -121,7 +121,7 @@ if (typeof slideshowjs === "undefined") {
         document.body.appendChild(viewer);
         
         return {
-            toggle: toggle;
+            toggle: toggle
         };
     }());
 }
