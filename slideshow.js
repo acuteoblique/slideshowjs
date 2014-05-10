@@ -4,7 +4,7 @@ if (typeof slideshowjs === "undefined") {
             almostFillStyle = "top: 0%; width: 100%; height: 100%; position: fixed;",
             imageFillStyle = "max-width:100%; max-height:100%; width:auto; height:auto;",
             controlStyle = "font-size: 400%; color: black; opacity: 0.5; text-shadow: 1px 1px white, -1px -1px #444; top: 0%; left: 0%; position: fixed; z-index: 1001;",
-            maxPages = 20,
+            maxPages = Infinity,
             pages = 0,
             toArray = function(arrayLike) {
                 var arr = [], idx = 0;
@@ -52,6 +52,7 @@ if (typeof slideshowjs === "undefined") {
                             removeCurrent();
                             updateFromIdx();
                         }
+                        updateEntryCount();
                     }
                 };
                 return full;
@@ -88,6 +89,7 @@ if (typeof slideshowjs === "undefined") {
             close = document.createElement("span"),
             next = document.createElement("span"),
             prev = document.createElement("span"),
+            entryCount = document.createElement("span"),
             currentIdx = 0,
             removeCurrent = function() {
                 effective.innerHTML = "";
@@ -108,6 +110,10 @@ if (typeof slideshowjs === "undefined") {
                 else {
                     console.log("Empty entries.");
                 }
+                updateEntryCount();
+            },
+            updateEntryCount = function() { 
+                entryCount.textContent = " " + currentIdx + " / " + entries.length + " ";
             },
             closeHandler = function() { viewer.style.display = "none"; },
             nextHandler = function() { 
@@ -130,13 +136,15 @@ if (typeof slideshowjs === "undefined") {
         prev.onclick = prevHandler;
         controls.appendChild(prev);
         
+        controls.appendChild(entryCount);
+        
         close.textContent = "X";
         close.onclick = closeHandler;
         controls.appendChild(close);
         
         next.textContent = " >";
         effective.onclick = next.onclick = nextHandler;
-        controls.appendChild(next);
+        // controls.appendChild(next); // No need for next since clicking the image goes next.
         
         controls.setAttribute("style", controlStyle);
         viewer.appendChild(controls);
