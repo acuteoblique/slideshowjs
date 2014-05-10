@@ -57,7 +57,7 @@ if (typeof slideshowjs === "undefined") {
                 console.log("Before processing document: " + entries.length);
                 var anyEntries = !!entries.length;
                 entries.splice.apply(entries, [entries.length - 1, 0].concat(toArray(document.querySelectorAll("a > img")).
-                    map(imgLinkToUriPair).filter(filterUriPair).map(uriPairToImgEntry)));
+                    map(imgLinkToUriPair).filter(uriPairFilter).map(uriPairToImgEntry)));
                     
                 if (entries && entries.length && !anyEntries) {
                     updateFromIdx();
