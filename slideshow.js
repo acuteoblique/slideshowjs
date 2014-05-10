@@ -14,6 +14,10 @@ if (typeof slideshowjs === "undefined") {
                 return arr;
             },
             entries = [],
+            getPathFromUri = function(uri) {
+                var result = /[^:]+:\/\/[^/]+(\/[^?#]+)/.exec(uri);
+                return result && result[1];
+            },
             imgLinkToUriPair = function(original) {
                 var fullUri = original.parentElement.getAttribute("data-super-full-img") || original.parentElement.href;
                 return {
@@ -23,9 +27,9 @@ if (typeof slideshowjs === "undefined") {
             },
             uriPairFilter = function(pair) {
                 try {
-                    var fullPath = /[^:]+:\/\/[^/]+(\/[^?#]+)/.exec(pair.full)[1],
-                        thumbnailPath = /[^:]+:\/\/[^/]+(\/[^?#]+)/.exec(pair.thumbnail)[1],
-                        pathMatches = fullPath === thumbnailPath;
+                    var fullPath = getPathFromUri(pair.full),
+                        thumbnailPath = getPathFromUri(pair.thumbnail),
+                        pathMatches = fullPath && fullPath === thumbnailPath;
                         
                     return pair.thumbnail && pair.full && pathMatches;
                 }
