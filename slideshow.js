@@ -93,7 +93,7 @@ if (typeof slideshowjs === "undefined") {
                 updateFromIdx();
             },
             toggle = function() {
-                var viewerVisible = viewer.style.display === "none";
+                var viewerVisible = viewer.style.display !== "none";
                 viewer.style.display = viewerVisible ? "none" : "block";
             };
         
