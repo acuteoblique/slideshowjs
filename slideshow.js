@@ -3,7 +3,7 @@ if (typeof slideshowjs === "undefined") {
         var viewerStyle = "display: none; top: 0%; width: 100%; height: 100%; position: fixed; z-index: 1000;",
             almostFillStyle = "top: 0%; width: 100%; height: 100%; position: fixed;",
             imageFillStyle = "max-width:100%; max-height:100%; width:auto; height:auto;",
-            controlStyle = "font-size: 400%; color: black; opacity: 0.5; text-shadow: 1px 1px white, -1px -1px #444; top: 0%; left: 0%; position: fixed; z-index: 1001;",
+            controlStyle = "font-size: 300%; color: gray; opacity: 0.33; text-shadow: 1px 1px white, -1px -1px #444; top: 0%; left: 0%; position: fixed; z-index: 1001;",
             maxPages = Infinity,
             pages = 0,
             toArray = function(arrayLike) {
