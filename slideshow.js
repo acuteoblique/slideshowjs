@@ -14,9 +14,29 @@ if (typeof slideshowjs === "undefined") {
                 return arr;
             },
             entries = [],
-            imgLinkToImgEntry = function(original) {
+            imgLinkToUriPair = function(original) {
+                var fullUri = original.parentElement.getAttribute("data-super-full-img") || original.parentElement.href;
+                return {
+                    thumbnail: original.src,
+                    full: fullUri
+                };
+            },
+            uriPairFilter = function(pair) {
+                try {
+                    var fullPath = /[^:]+:\/\/[^/]+(\/[^?#]+)/.exec(pair.full)[1],
+                        thumbnailPath = /[^:]+:\/\/[^/]+(\/[^?#]+)/.exec(pair.thumbnail)[1],
+                        pathMatches = fullPath === thumbnailPath;
+                        
+                    return pair.thumbnail && pair.full && pathMatches;
+                }
+                catch (e) { 
+                    console.error("Error filtering: " + e);
+                    return false;
+                }
+            },
+            uriPairToImgEntry = function(pair) {
                 var full = document.createElement("img"),
-                    fullUri = original.parentElement.getAttribute("data-super-full-img") || original.parentElement.href;
+                    fullUri = pair.full;
 
                 full.setAttribute("style", imageFillStyle);
                 full.src = fullUri;
@@ -36,7 +56,9 @@ if (typeof slideshowjs === "undefined") {
                 if (pages++ > maxPages) { return; }
                 console.log("Before processing document: " + entries.length);
                 var anyEntries = !!entries.length;
-                entries.splice.apply(entries, [entries.length - 1, 0].concat(toArray(document.querySelectorAll("a > img")).map(imgLinkToImgEntry)));
+                entries.splice.apply(entries, [entries.length - 1, 0].concat(toArray(document.querySelectorAll("a > img")).
+                    map(imgLinkToUriPair).filter(filterUriPair).map(uriPairToImgEntry)));
+                    
                 if (entries && entries.length && !anyEntries) {
                     updateFromIdx();
                 }
