@@ -15,9 +15,11 @@ if (typeof slideshowjs === "undefined") {
             },
             entries = [],
             imgLinkToImgEntry = function(original) {
-                var full = document.createElement("img");
+                var full = document.createElement("img"),
+                    fullUri = original.parentElement.getAttribute("data-super-full-img") || original.parentElement.href;
+
                 full.setAttribute("style", imageFillStyle);
-                full.src = original.parentElement.href;
+                full.src = fullUri;
                 full.onerror = function(e) {
                     var newIdx = entries.indexOf(full);
                     if (newIdx !== -1) {
