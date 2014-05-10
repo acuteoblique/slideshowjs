@@ -1,0 +1,4 @@
+slideshowjs
+===========
+
+Slideshow bookmarklet
