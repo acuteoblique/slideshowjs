@@ -1,31 +1,28 @@
-if (typeof slideshowjs === "undefined") {
-    var slideshowjs = (function () {
-        var viewerStyle = "display: none; top: 0%; width: 100%; height: 100%; position: fixed; z-index: 1000;",
-            almostFillStyle = "top: 0%; width: 100%; height: 100%; position: fixed;",
-            imageFillStyle = "max-width:100%; max-height:100%; width:auto; height:auto;",
-            controlStyle = "font-size: 400%; color: black; opacity: 0.5; text-shadow: 1px 1px white, -1px -1px #444; top: 0%; left: 0%; position: fixed; z-index: 1001;",
-            maxPages = 20,
-            pages = 0,
-            toArray = function(arrayLike) {
-                var arr = [], idx = 0;
-                for (idx = 0; idx < arrayLike.length; ++idx) {
-                    arr.push(arrayLike[idx]);
-                }
-                return arr;
-            },
-            entries = [],
-            getPathFromUri = function(uri) {
-                var result = /[^:]+:\/\/[^/]+(\/[^?#]+)/.exec(uri);
-                return result && result[1];
-            },
-            imgLinkToUriPair = function(original) {
+(function slideshowGlobal() {
+    "use strict";
+    if (typeof window.slideshowJs !== "undefined") {
+        window.slideshowJs.toggle();
+    }
+    else {
+        function getPathFromUri(uri) {
+            var result = /[^:]+:\/\/[^/]+(\/[^?#]+)/.exec(uri);
+            return result && result[1];
+        }
+
+        function DocumentImageList() {
+            var maxPages = 20,
+                pages = 0,
+                entries = new ArrayWithEvent();
+
+            function imgLinkToUriPair(original) {
                 var fullUri = original.parentElement.getAttribute("data-super-full-img") || original.parentElement.href;
                 return {
                     thumbnail: original.src,
                     full: fullUri
                 };
-            },
-            uriPairFilter = function(pair) {
+            }
+    
+            function uriPairFilter(pair) {
                 try {
                     var fullPath = getPathFromUri(pair.full),
                         thumbnailPath = getPathFromUri(pair.thumbnail),
@@ -37,37 +34,31 @@ if (typeof slideshowjs === "undefined") {
                     console.error("Error filtering: " + e);
                     return false;
                 }
-            },
-            uriPairToImgEntry = function(pair) {
+            }
+    
+            function uriPairToImgEntry(pair) {
                 var full = document.createElement("img"),
                     fullUri = pair.full;
-
-                full.setAttribute("style", imageFillStyle);
+    
                 full.src = fullUri;
                 full.onerror = function(e) {
                     var newIdx = entries.indexOf(full);
                     if (newIdx !== -1) {
                         entries.splice(newIdx, 1);
-                        if (newIdx === currentIdx) {
-                            removeCurrent();
-                            updateFromIdx();
-                        }
                     }
                 };
                 return full;
-            },
-            processDocument = function(document) {
+            }
+    
+            function processDocument(document) {
                 if (pages++ > maxPages) { return; }
                 console.log("Before processing document: " + entries.length);
                 var anyEntries = !!entries.length;
-                entries.splice.apply(entries, [entries.length - 1, 0].concat(toArray(document.querySelectorAll("a > img")).
+                entries.splice.apply(entries, [entries.length - 1, 0].concat(Array.from(document.querySelectorAll("a > img")).
                     map(imgLinkToUriPair).filter(uriPairFilter).map(uriPairToImgEntry)));
                     
-                if (entries && entries.length && !anyEntries) {
-                    updateFromIdx();
-                }
                 console.log("After processing document: " + entries.length);
-                var nexts = toArray(document.querySelectorAll("a")).filter(function(a) { return a.textContent.toLowerCase().trim() === "next"; });
+                var nexts = Array.from(document.querySelectorAll("a")).filter(function(a) { return a.textContent.toLowerCase().trim() === "next"; });
                 if (nexts && nexts.length) {
                     setTimeout(function() {
                     console.log("Found " + nexts.length + " possible nexts. Using " + nexts[nexts.length - 1].href);
@@ -81,76 +72,156 @@ if (typeof slideshowjs === "undefined") {
                     document.body.appendChild(iframe);
                     }, 10000);
                 }
-            },
-            viewer = document.createElement("div"),
-            effective = document.createElement("div"),
-            controls = document.createElement("div"),
-            close = document.createElement("span"),
-            next = document.createElement("span"),
-            prev = document.createElement("span"),
-            currentIdx = 0,
-            removeCurrent = function() {
+            }
+    
+            this.processDocument = processDocument;
+            this.entries = entries;
+        }
+
+        function SlideshowJs(documentImageList) {
+            var viewerStyle = "display: none; top: 0%; width: 100%; height: 100%; position: fixed; z-index: 1000;",
+                almostFillStyle = "top: 0%; width: 100%; height: 100%; position: fixed;",
+                imageFillStyle = "max-width:100%; max-height:100%; width:auto; height:auto;",
+                bgImageFillStyle = imageFillStyle + " z-index: -1;",
+                controlStyle = "font-size: 400%; color: black; opacity: 0.5; text-shadow: 1px 1px white, -1px -1px #444; top: 0%; left: 0%; position: fixed; z-index: 1001;",
+                viewer = document.createElement("div"),
+                effective = document.createElement("div"),
+                controls = document.createElement("div"),
+                close = document.createElement("span"),
+                next = document.createElement("span"),
+                prev = document.createElement("span"),
+                currentIdx = 0;
+    
+            function removeCurrent() {
                 effective.innerHTML = "";
-            },
-            updateFromIdx = function() {
+            }
+    
+            function updateFromIdx() {
                 if (currentIdx < 0) {
-                    currentIdx = entries.length + currentIdx;
+                    currentIdx = documentImageList.entries.length + currentIdx;
                 }
-                if (entries.length === 0) {
+                if (documentImageList.entries.length === 0) {
                     currentIdx = 0;
                 }
                 else {
-                    currentIdx = currentIdx % entries.length;
+                    currentIdx = currentIdx % documentImageList.entries.length;
                 }
-                if (entries && entries.length) {
-                    effective.appendChild(entries[currentIdx]);
+                if (documentImageList.entries && documentImageList.entries.length) {
+                    documentImageList.entries[currentIdx].setAttribute("style", imageFillStyle);
+                    effective.appendChild(documentImageList.entries[currentIdx]);
+                    if (currentIdx + 1 < documentImageList.entries.length) {
+                        documentImageList.entries[currentIdx + 1].setAttribute("style", bgImageFillStyle);
+                        effective.appendChild(documentImageList.entries[currentIdx + 1]);
+                    }
                 }
                 else {
                     console.log("Empty entries.");
                 }
-            },
-            closeHandler = function() { viewer.style.display = "none"; },
-            nextHandler = function() { 
-                removeCurrent();
-                ++currentIdx;
-                updateFromIdx();
-            },
-            prevHandler = function() { 
+            }
+    
+            function toggle() {
+                var viewerVisible = viewer.style.display !== "none";
+                viewer.style.display = viewerVisible ? "none" : "block";
+            }
+            
+            prev.textContent = "< ";
+            prev.onclick = function prevHandler() { 
                 removeCurrent();
                 --currentIdx;
                 updateFromIdx();
-            },
-            toggle = function() {
-                var viewerVisible = viewer.style.display !== "none";
-                viewer.style.display = viewerVisible ? "none" : "block";
             };
-        
-        processDocument(document);
-        prev.textContent = "< ";
-        prev.onclick = prevHandler;
-        controls.appendChild(prev);
-        
-        close.textContent = "X";
-        close.onclick = closeHandler;
-        controls.appendChild(close);
-        
-        next.textContent = " >";
-        effective.onclick = next.onclick = nextHandler;
-        controls.appendChild(next);
-        
-        controls.setAttribute("style", controlStyle);
-        viewer.appendChild(controls);
-        
-        effective.setAttribute("style", almostFillStyle);
-        viewer.appendChild(effective);
-        updateFromIdx();
-        
-        viewer.setAttribute("style", viewerStyle);
-        document.body.appendChild(viewer);
-        
-        return {
-            toggle: toggle
-        };
-    }());
-}
-slideshowjs.toggle();
+            controls.appendChild(prev);
+            
+            close.textContent = "X";
+            close.onclick = function closeHandler() { viewer.style.display = "none"; };
+            controls.appendChild(close);
+            
+            next.textContent = " >";
+            effective.onclick = next.onclick = function nextHandler() { 
+                removeCurrent();
+                ++currentIdx;
+                updateFromIdx();
+            };
+            controls.appendChild(next);
+            
+            controls.setAttribute("style", controlStyle);
+            viewer.appendChild(controls);
+            
+            effective.setAttribute("style", almostFillStyle);
+            viewer.appendChild(effective);
+            updateFromIdx();
+            
+            viewer.setAttribute("style", viewerStyle);
+            document.body.appendChild(viewer);
+
+            documentImageList.entries.addEventListener("change", function () {
+                removeCurrent();
+                updateFromIdx();
+            });
+            
+            return {
+                toggle: toggle
+            };
+        }
+    
+        function loadRequiredScripts(uris, callback) {
+            var scripts = document.querySelectorAll("script"),
+                lastScript = scripts[scripts.length - 1],
+                lastScriptUri = scripts[scripts.length - 1].getAttribute("src"),
+                baseUri = getFirstOffSplitBySubstring(lastScriptUri, "slideshow.js");
+
+            function getFirstOffSplitBySubstring(fullString, searchString) {
+                var found = fullString.indexOf(searchString);
+                return found == -1 ? fullString : fullString.substr(0, found);
+            }
+    
+            function scriptError() {
+                console.error("Error loading script: " + this.getAttribute("src"));
+                loadNextScript();
+            }
+
+            function scriptLoaded() {
+                loadNextScript();
+            }
+
+            function loadNextScript() {
+                var script,
+                    uri;
+                
+                if (uris.length > 0) {
+                    script = document.createElement("script"),
+                    uri = uris.splice(0, 1)[0];
+
+                    script.setAttribute("src", baseUri + uri);
+                    script.setAttribute("type", "text/javascript");
+                    script.addEventListener("load", scriptLoaded);
+                    script.addEventListener("error", scriptError);
+                    document.head.appendChild(script);
+                }
+                else {
+                    callback();
+                }
+            }
+            loadNextScript();
+        }
+
+        if (typeof window.setImmediate === "undefined") {
+            window.setImmediate = function (callback) {
+                window.setTimeout(callback, 0);
+            };
+        }
+
+        loadRequiredScripts([
+            "es5-shim.js", 
+            "es6-shim.js", 
+            "eventTarget.js", 
+            "arrayWithEvent.js"
+        ], function () {
+            var documentImageList = new DocumentImageList();
+            window.slideshowJs = new SlideshowJs(documentImageList);
+            window.slideshowJs.toggle();
+
+            documentImageList.processDocument(document);
+        });
+    }
+})();
