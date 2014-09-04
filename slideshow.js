@@ -82,7 +82,7 @@
             var viewerStyle = "display: none; top: 0%; width: 100%; height: 100%; position: fixed; z-index: 1000;",
                 almostFillStyle = "top: 0%; width: 100%; height: 100%; position: fixed;",
                 imageFillStyle = "max-width:100%; max-height:100%; width:auto; height:auto;",
-                bgImageFillStyle = imageFillStyle + " z-index: -1;",
+                bgImageFillStyle = imageFillStyle + " opacity: 0;",
                 controlStyle = "font-size: 400%; color: black; opacity: 0.5; text-shadow: 1px 1px white, -1px -1px #444; top: 0%; left: 0%; position: fixed; z-index: 1001;",
                 viewer = document.createElement("div"),
                 effective = document.createElement("div"),
@@ -93,7 +93,10 @@
                 currentIdx = 0;
     
             function removeCurrent() {
-                effective.innerHTML = "";
+                var target = documentImageList.entries[currentIdx];
+                if (target && target.parentElement) {
+                    target.parentElement.removeChild(target);
+                }
             }
     
             function updateFromIdx() {
