@@ -86,11 +86,11 @@
                 controlStyle = "font-size: 400%; color: black; opacity: 0.5; text-shadow: 1px 1px white, -1px -1px #444; top: 0%; left: 0%; position: fixed; z-index: 1001;",
                 viewer = document.createElement("div"),
                 effective = document.createElement("div"),
-                position = document.createElement("div"),
                 controls = document.createElement("div"),
+                prev = document.createElement("span"),
+                position = document.createElement("span"),
                 close = document.createElement("span"),
                 next = document.createElement("span"),
-                prev = document.createElement("span"),
                 currentIdx = 0;
     
             function removeCurrent() {
