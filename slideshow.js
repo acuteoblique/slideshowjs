@@ -1,9 +1,9 @@
-(function slideshowGlobal() {
-    "use strict";
-    if (typeof window.slideshowJs !== "undefined") {
-        window.slideshowJs.toggle();
-    }
-    else {
+if (typeof window.slideshowJs !== "undefined") {
+    window.slideshowJs.toggle();
+}
+else {
+    (function slideshowGlobal() {
+        "use strict";
         function getPathFromUri(uri) {
             var result = /[^:]+:\/\/[^/]+(\/[^?#]+)/.exec(uri);
             return result && result[1];
@@ -140,7 +140,7 @@
 
             controls.appendChild(position);
             
-            close.textContent = "X";
+            close.textContent = " X";
             close.onclick = function closeHandler() { viewer.style.display = "none"; };
             controls.appendChild(close);
             
@@ -172,11 +172,22 @@
                 toggle: toggle
             };
         }
+
+        function getLastScriptUri() {
+            var scripts = document.querySelectorAll("script"),
+                lastScriptUri,
+                idx;
+
+            for (idx = scripts.length; idx > 0 && !lastScriptUri; --idx) {
+                if (scripts[idx - 1].src.length > 0) {
+                    lastScriptUri = scripts[idx - 1].src;
+                }
+            }
+            return lastScriptUri;
+        }
     
         function loadRequiredScripts(uris, callback) {
-            var scripts = document.querySelectorAll("script"),
-                lastScript = scripts[scripts.length - 1],
-                lastScriptUri = scripts[scripts.length - 1].getAttribute("src"),
+            var lastScriptUri = getLastScriptUri(),
                 baseUri = getFirstOffSplitBySubstring(lastScriptUri, "slideshow.js");
 
             function getFirstOffSplitBySubstring(fullString, searchString) {
@@ -232,5 +243,5 @@
 
             documentImageList.processDocument(document);
         });
-    }
-})();
+    })();
+}
