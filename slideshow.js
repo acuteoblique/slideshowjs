@@ -86,6 +86,7 @@
                 controlStyle = "font-size: 400%; color: black; opacity: 0.5; text-shadow: 1px 1px white, -1px -1px #444; top: 0%; left: 0%; position: fixed; z-index: 1001;",
                 viewer = document.createElement("div"),
                 effective = document.createElement("div"),
+                position = document.createElement("div"),
                 controls = document.createElement("div"),
                 close = document.createElement("span"),
                 next = document.createElement("span"),
@@ -120,6 +121,8 @@
                 else {
                     console.log("Empty entries.");
                 }
+
+                position.textContent = (currentIdx + 1) + " of " + documentImageList.entries.length;
             }
     
             function toggle() {
@@ -134,6 +137,8 @@
                 updateFromIdx();
             };
             controls.appendChild(prev);
+
+            controls.appendChild(position);
             
             close.textContent = "X";
             close.onclick = function closeHandler() { viewer.style.display = "none"; };
@@ -145,7 +150,8 @@
                 ++currentIdx;
                 updateFromIdx();
             };
-            controls.appendChild(next);
+            // Just use clicking on image to go next.
+            // controls.appendChild(next);
             
             controls.setAttribute("style", controlStyle);
             viewer.appendChild(controls);
