@@ -9,6 +9,61 @@ else {
             return result && result[1];
         }
 
+        function Timer(timeInMilliseconds, autoStart) {
+            var eventTarget = new EventTarget(this, ["timer"]),
+                id = 0,
+                timeoutHandle;
+
+            function timer(expectedId) {
+                if (timeoutHandle && expectedId === id) {
+                    eventTarget.dispatchTimerEvent();
+                    timeoutHandle = setTimeout(timer.bind(this, ++id), timeInMilliseconds);
+                }
+            }
+
+            function stop() {
+                if (timeoutHandle) {
+                    clearTimeout(timeoutHandle);
+                    timeoutHandle = null;
+                }
+            }
+            this.stop = stop;
+
+            function play() {
+                if (!timeoutHandle) {
+                    timeoutHandle = setTimeout(timer.bind(this, ++id), timeInMilliseconds);
+                }
+            }
+            this.play = play;
+
+            function toggle() {
+                if (!timeoutHandle) {
+                    play();
+                }
+                else {
+                    stop();
+                }
+            }
+            this.toggle = toggle;
+
+            function reset() {
+                if (timeoutHandle) {
+                    stop();
+                    play();
+                }
+            }
+            this.reset = reset;
+
+            function isPlaying() {
+                return !!timeoutHandle;
+            }
+            this.isPlaying = isPlaying;
+
+            if (autoStart) {
+                play();
+            }
+        }
+
         function DocumentImageList() {
             var maxPages = 20,
                 pages = 0,
@@ -88,9 +143,11 @@ else {
                 effective = document.createElement("div"),
                 controls = document.createElement("div"),
                 prev = document.createElement("span"),
+                playPause = document.createElement("span"),
                 position = document.createElement("span"),
                 close = document.createElement("span"),
                 next = document.createElement("span"),
+                timer = new Timer(5000),
                 currentIdx = 0;
     
             function removeCurrent() {
@@ -132,11 +189,19 @@ else {
             
             prev.textContent = "< ";
             prev.onclick = function prevHandler() { 
+                timer.reset();
                 removeCurrent();
                 --currentIdx;
                 updateFromIdx();
             };
             controls.appendChild(prev);
+
+            playPause.textContent = "\u25B6";
+            playPause.onclick = function playPauseHandler() {
+                timer.toggle();
+                playPause.textContent = timer.isPlaying() ? "\u25A0" : "\u25B6";
+            };
+            controls.appendChild(playPause);
 
             controls.appendChild(position);
             
@@ -145,7 +210,8 @@ else {
             controls.appendChild(close);
             
             next.textContent = " >";
-            effective.onclick = next.onclick = function nextHandler() { 
+            timer.ontimer = effective.onclick = next.onclick = function nextHandler() { 
+                timer.reset();
                 removeCurrent();
                 ++currentIdx;
                 updateFromIdx();
