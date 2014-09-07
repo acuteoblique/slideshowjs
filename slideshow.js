@@ -9,6 +9,33 @@ else {
             return result && result[1];
         }
 
+        function KeyHandler(element) {
+            var eventTarget = new EventTarget(this, ["left", "right", "enter", "escape", "space"]);
+            element.addEventListener("keypress", function (e) {
+                switch (e.keyCode) {
+                case 32:
+                    eventTarget.dispatchSpaceEvent(e);
+                    break;
+                case 13:
+                    eventTarget.dispatchEnterEvent(e);
+                    break;
+                case 27:
+                    eventTarget.dispatchEscapeEvent(e);
+                    break;
+                }
+            });
+            element.addEventListener("keydown", function (e) {
+                switch (e.keyCode) {
+                case 37:
+                    eventTarget.dispatchLeftEvent(e);
+                    break;
+                case 39:
+                    eventTarget.dispatchRightEvent(e);
+                    break;
+                }
+            });
+        }
+
         function Timer(timeInMilliseconds, autoStart) {
             var eventTarget = new EventTarget(this, ["timer"]),
                 id = 0,
@@ -148,6 +175,7 @@ else {
                 close = document.createElement("span"),
                 next = document.createElement("span"),
                 timer = new Timer(5000),
+                keyHandler = new KeyHandler(document.body.parentNode),
                 currentIdx = 0;
     
             function removeCurrent() {
@@ -188,7 +216,7 @@ else {
             }
             
             prev.textContent = "< ";
-            prev.onclick = function prevHandler() { 
+            keyHandler.onleft = prev.onclick = function prevHandler() { 
                 timer.reset();
                 removeCurrent();
                 --currentIdx;
@@ -197,7 +225,7 @@ else {
             controls.appendChild(prev);
 
             playPause.textContent = "\u25B6";
-            playPause.onclick = function playPauseHandler() {
+            keyHandler.onspace = playPause.onclick = function playPauseHandler() {
                 timer.toggle();
                 playPause.textContent = timer.isPlaying() ? "\u25A0" : "\u25B6";
             };
@@ -206,11 +234,14 @@ else {
             controls.appendChild(position);
             
             close.textContent = " X";
-            close.onclick = function closeHandler() { viewer.style.display = "none"; };
+            keyHandler.onescape = close.onclick = function closeHandler() { 
+                timer.stop();
+                viewer.style.display = "none"; 
+            };
             controls.appendChild(close);
             
             next.textContent = " >";
-            timer.ontimer = effective.onclick = next.onclick = function nextHandler() { 
+            keyHandler.onright = timer.ontimer = effective.onclick = next.onclick = function nextHandler() { 
                 timer.reset();
                 removeCurrent();
                 ++currentIdx;
