@@ -4,11 +4,6 @@ if (typeof window.slideshowJs !== "undefined") {
 else {
     (function slideshowGlobal() {
         "use strict";
-        function getPathFromUri(uri) {
-            var result = /[^:]+:\/\/[^/]+(\/[^?#]+)/.exec(uri);
-            return result && result[1];
-        }
-
         function KeyHandler(element) {
             var eventTarget = new EventTarget(this, ["left", "right", "enter", "escape", "space"]);
             element.addEventListener("keypress", function (e) {
@@ -96,15 +91,21 @@ else {
                 pages = 0,
                 entries = new ArrayWithEvent();
 
-            function imgLinkToUriPair(original) {
-                var fullUri = original.parentElement.getAttribute("data-super-full-img") || original.parentElement.href;
+            function getPathFromUri(uri) {
+                var result = /[^:]+:\/\/[^/]+(\/[^?#]+)/.exec(uri);
+                return result && result[1];
+            }
+
+            function elementToEntry(originalElement) {
+                var fullUri = originalElement.parentElement.getAttribute("data-super-full-img") || originalElement.parentElement.href;
                 return {
-                    thumbnail: original.src,
+                    thumbnail: originalElement.src,
+                    thumbnailImg: originalElement,
                     full: fullUri
                 };
             }
     
-            function uriPairFilter(pair) {
+            function entryFilter(pair) {
                 try {
                     var fullPath = getPathFromUri(pair.full),
                         thumbnailPath = getPathFromUri(pair.thumbnail),
@@ -118,18 +119,21 @@ else {
                 }
             }
     
-            function uriPairToImgEntry(pair) {
+            function entryToFullImageElement(entry) {
                 var full = document.createElement("img"),
-                    fullUri = pair.full;
+                    fullUri = entry.full;
     
-                full.src = fullUri;
                 full.onerror = function(e) {
-                    var newIdx = entries.indexOf(full);
+                    var newIdx = entries.indexOf(entry);
                     if (newIdx !== -1) {
                         entries.splice(newIdx, 1);
                     }
                 };
-                return full;
+                entry.fullImg = full;
+                entry.ensureFullImg = function () {
+                    full.src = fullUri;
+                };
+                return entry;
             }
     
             function processDocument(document) {
@@ -137,21 +141,20 @@ else {
                 console.log("Before processing document: " + entries.length);
                 var anyEntries = !!entries.length;
                 entries.splice.apply(entries, [entries.length - 1, 0].concat(Array.from(document.querySelectorAll("a > img")).
-                    map(imgLinkToUriPair).filter(uriPairFilter).map(uriPairToImgEntry)));
+                    map(elementToEntry).filter(entryFilter).map(entryToFullImageElement)));
                     
                 console.log("After processing document: " + entries.length);
                 var nexts = Array.from(document.querySelectorAll("a")).filter(function(a) { return a.textContent.toLowerCase().trim() === "next"; });
                 if (nexts && nexts.length) {
                     setTimeout(function() {
-                    console.log("Found " + nexts.length + " possible nexts. Using " + nexts[nexts.length - 1].href);
-                    var iframe = document.createElement("iframe");
-                    iframe.src = nexts[nexts.length - 1].href;
-                    iframe.style.display = "none";
-                    iframe.onload = function() {
-                        processDocument(iframe.contentDocument);
-                    }
-                    iframe.onerror = function() { console.error("Error attempting to read next: " + iframe.src); }
-                    document.body.appendChild(iframe);
+                        console.log("Found " + nexts.length + " possible nexts. Using " + nexts[nexts.length - 1].href);
+                        var iframe = document.createElement("iframe");
+                        iframe.src = nexts[nexts.length - 1].href;
+                        iframe.style.display = "none";
+
+                        iframe.onload = function() { processDocument(iframe.contentDocument); }
+                        iframe.onerror = function() { console.error("Error attempting to read next: " + iframe.src); }
+                        document.body.appendChild(iframe); // Must be appended to document to actually load.
                     }, 10000);
                 }
             }
@@ -161,11 +164,11 @@ else {
         }
 
         function SlideshowJs(documentImageList) {
-            var viewerStyle = "display: none; top: 0%; width: 100%; height: 100%; position: fixed; z-index: 1000;",
+            var viewerStyle = "display: none; align-items: center; justify-content: center; flex-wrap: nowrap; flex-direction: column; top: 0%; width: 100%; height: 100%; position: fixed; z-index: 1000; background-color: rgba(0, 0, 0, 0.75);",
                 almostFillStyle = "top: 0%; width: 100%; height: 100%; position: fixed;",
                 imageFillStyle = "max-width:100%; max-height:100%; width:auto; height:auto;",
-                bgImageFillStyle = imageFillStyle + " opacity: 0;",
-                controlStyle = "font-size: 400%; color: black; opacity: 0.5; text-shadow: 1px 1px white, -1px -1px #444; top: 0%; left: 0%; position: fixed; z-index: 1001;",
+                bgImageFillStyle = "position: fixed; left: 0px; top: 0px; opacity: 0;",
+                controlStyle = "display: flex; justify-content: center; flex-wrap: nowrap; flex-direction: row; font-size: 400%; color: black; opacity: 0.5; text-shadow: 1px 1px white, -1px -1px #444; top: 0%; left: 0%; position: fixed; z-index: 1001;",
                 viewer = document.createElement("div"),
                 effective = document.createElement("div"),
                 controls = document.createElement("div"),
@@ -179,7 +182,7 @@ else {
                 currentIdx = 0;
     
             function removeCurrent() {
-                var target = documentImageList.entries[currentIdx];
+                var target = documentImageList.entries[currentIdx].fullImg;
                 if (target && target.parentElement) {
                     target.parentElement.removeChild(target);
                 }
@@ -196,11 +199,14 @@ else {
                     currentIdx = currentIdx % documentImageList.entries.length;
                 }
                 if (documentImageList.entries && documentImageList.entries.length) {
-                    documentImageList.entries[currentIdx].setAttribute("style", imageFillStyle);
-                    effective.appendChild(documentImageList.entries[currentIdx]);
+                    documentImageList.entries[currentIdx].ensureFullImg();
+                    documentImageList.entries[currentIdx].fullImg.setAttribute("style", imageFillStyle);
+                    effective.appendChild(documentImageList.entries[currentIdx].fullImg);
+
                     if (currentIdx + 1 < documentImageList.entries.length) {
-                        documentImageList.entries[currentIdx + 1].setAttribute("style", bgImageFillStyle);
-                        effective.appendChild(documentImageList.entries[currentIdx + 1]);
+                        documentImageList.entries[currentIdx + 1].ensureFullImg();
+                        documentImageList.entries[currentIdx + 1].fullImg.setAttribute("style", bgImageFillStyle);
+                        effective.appendChild(documentImageList.entries[currentIdx + 1].fullImg);
                     }
                 }
                 else {
@@ -212,7 +218,7 @@ else {
     
             function toggle() {
                 var viewerVisible = viewer.style.display !== "none";
-                viewer.style.display = viewerVisible ? "none" : "block";
+                viewer.style.display = viewerVisible ? "none" : "flex";
             }
             
             prev.textContent = "< ";
