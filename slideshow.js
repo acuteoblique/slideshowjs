@@ -4,6 +4,16 @@ if (typeof window.slideshowJs !== "undefined") {
 else {
     (function slideshowGlobal() {
         "use strict";
+        function uriToBlobAndNameAsync(uri) {
+            return {
+                blob: null,
+                name: ""
+            };
+        }
+
+        function downloadUrisAsZipAsync(uris) {
+        }
+
         function KeyHandler(element) {
             var eventTarget = new EventTarget(this, ["left", "right", "enter", "escape", "space"]);
             element.addEventListener("keypress", function (e) {
@@ -174,6 +184,7 @@ else {
                 controls = document.createElement("div"),
                 prev = document.createElement("span"),
                 playPause = document.createElement("span"),
+                download = document.createElement("span"),
                 position = document.createElement("span"),
                 close = document.createElement("span"),
                 next = document.createElement("span"),
@@ -229,6 +240,14 @@ else {
                 updateFromIdx();
             };
             controls.appendChild(prev);
+
+            download.textContent = "\u25BC";
+            download.onclick = function downloadHandler() {
+                function entryToFullUri(entry) { return entry.full; }
+                function filterEntry(entry) { return entry && entry.full; }
+                downloadUrisAsZipAsync(entries.filter(filterEntry).map(entryToFullUri));
+            };
+            controls.appendChild(download);
 
             playPause.textContent = "\u25B6";
             keyHandler.onspace = playPause.onclick = function playPauseHandler() {
@@ -338,7 +357,12 @@ else {
             "es5-shim.js", 
             "es6-shim.js", 
             "eventTarget.js", 
-            "arrayWithEvent.js"
+            "arrayWithEvent.js",
+            "Blob.js",
+            "FileSaver.js",
+            "deflate.js",
+            "inflate.js",
+            "zip.js"
         ], function () {
             var documentImageList = new DocumentImageList();
             window.slideshowJs = new SlideshowJs(documentImageList);
