@@ -178,7 +178,7 @@ else {
                 almostFillStyle = "top: 0%; width: 100%; height: 100%; position: fixed;",
                 imageFillStyle = "max-width:100%; max-height:100%; width:auto; height:auto;",
                 bgImageFillStyle = "position: fixed; left: 0px; top: 0px; opacity: 0;",
-                controlStyle = "display: flex; justify-content: center; flex-wrap: nowrap; flex-direction: row; font-size: 400%; color: black; opacity: 0.5; text-shadow: 1px 1px white, -1px -1px #444; top: 0%; left: 0%; position: fixed; z-index: 1001;",
+                controlStyle = "display: block; justify-content: center; flex-wrap: nowrap; flex-direction: row; font-size: 400%; color: black; opacity: 0.5; text-shadow: 1px 1px white, -1px -1px #444; top: 0%; left: 0%; position: fixed; z-index: 1001;",
                 viewer = document.createElement("div"),
                 effective = document.createElement("div"),
                 controls = document.createElement("div"),
@@ -229,7 +229,7 @@ else {
     
             function toggle() {
                 var viewerVisible = viewer.style.display !== "none";
-                viewer.style.display = viewerVisible ? "none" : "flex";
+                viewer.style.display = viewerVisible ? "none" : "block";
             }
             
             prev.textContent = "< ";
