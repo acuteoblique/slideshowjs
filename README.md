@@ -1,4 +1,4 @@
 slideshowjs
 ===========
 
-Slideshow bookmarklet
+[Slideshow bookmarklet](http://acuteoblique.github.io/slideshowjs/)
