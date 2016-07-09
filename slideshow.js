@@ -156,7 +156,11 @@ else {
                     map(elementToEntry).filter(entryFilter).map(entryToFullImageElement)));
                     
                 console.log("After processing document: " + entries.length);
-                var nexts = Array.from(document.querySelectorAll("a")).filter(function(a) { return a.textContent.toLowerCase().trim() === "next"; });
+                var nexts = Array.from(document.querySelectorAll("a")).filter(function(a) { 
+                    return a.textContent.toLowerCase().trim() === "next"; 
+                }).filter(function (a) {
+                    return a.href && a.href.length;
+                });
                 if (nexts && nexts.length) {
                     setTimeout(function() {
                         console.log("Found " + nexts.length + " possible nexts. Using " + nexts[nexts.length - 1].href);
