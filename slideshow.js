@@ -194,6 +194,7 @@ else {
                 controls = document.createElement("div"),
                 prev = document.createElement("span"),
                 playPause = document.createElement("span"),
+                playPauseState = 0,
                 download = document.createElement("span"),
                 changeSize = document.createElement("span"),
                 position = document.createElement("span"),
@@ -276,8 +277,18 @@ else {
 
             playPause.textContent = "\u25B6";
             keyHandler.onspace = playPause.onclick = function playPauseHandler() {
-                timer.toggle();
-                playPause.textContent = timer.isPlaying() ? "\u25A0" : "\u25B6";
+                playPauseState++;
+                if (playPauseState > 1) { 
+                    playPauseState = -1;
+                }
+                
+                if (playPauseState == 0) {
+                    timer.stop();
+                } else {
+                    timer.play();
+                }
+                
+                playPause.textContent = playPauseState == 0 ? "\u25A0" : (playPauseState == 1 ? "\u25B6" : "\u25C0");
             };
             controls.appendChild(playPause);
 
@@ -291,7 +302,7 @@ else {
             controls.appendChild(close);
             
             next.textContent = " >";
-            keyHandler.onright = timer.ontimer = effective.onclick = next.onclick = function nextHandler() { 
+            keyHandler.onright = effective.onclick = next.onclick = function nextHandler() { 
                 timer.reset();
                 removeCurrent();
                 ++currentIdx;
@@ -299,6 +310,12 @@ else {
             };
             // Just use clicking on image to go next.
             // controls.appendChild(next);
+            timer.ontimer = function timerHandler() {
+                timer.reset();
+                removeCurrent();
+                currentIdx += playPauseState;
+                updateFromIdx();
+            }
             
             controls.setAttribute("style", controlStyle);
             viewer.appendChild(controls);
