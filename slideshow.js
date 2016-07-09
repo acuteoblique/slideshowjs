@@ -181,8 +181,12 @@ else {
 
         function SlideshowJs(documentImageList) {
             var viewerStyle = "display: none; align-items: center; justify-content: center; flex-wrap: nowrap; flex-direction: column; top: 0%; width: 100%; height: 100%; position: fixed; z-index: 1000; background-color: rgba(0, 0, 0, 0.75);",
-                almostFillStyle = "top: 0%; width: 100%; height: 100%; position: fixed;",
-                imageFillStyle = "max-width:100%; max-height:100%; width:auto; height:auto;",
+                almostFillStyle = "top: 0%; width: 100%; height: 100%; position: fixed; overflow: auto;",
+                imageFillStyles = ["max-width:100%; max-height:100%; width:auto; height:auto;",
+                    "max-width:100%; width:auto;",
+                    "max-height:100%; height:auto;" 
+                ],
+                imageFillStyleIdx = 0,
                 bgImageFillStyle = "position: fixed; left: 0px; top: 0px; opacity: 0;",
                 controlStyle = "display: block; justify-content: center; flex-wrap: nowrap; flex-direction: row; font-size: 400%; color: black; opacity: 0.5; text-shadow: 1px 1px white, -1px -1px #444; top: 0%; left: 0%; position: fixed; z-index: 1001;",
                 viewer = document.createElement("div"),
@@ -191,6 +195,7 @@ else {
                 prev = document.createElement("span"),
                 playPause = document.createElement("span"),
                 download = document.createElement("span"),
+                changeSize = document.createElement("span"),
                 position = document.createElement("span"),
                 close = document.createElement("span"),
                 next = document.createElement("span"),
@@ -203,6 +208,16 @@ else {
                 if (target && target.parentElement) {
                     target.parentElement.removeChild(target);
                 }
+            }
+            
+            function changeImageStyle() {
+                imageFillStyleIdx++;
+                imageFillStyleIdx = imageFillStyleIdx % imageFillStyles.length;
+                applyImageStyle();
+            }
+            
+            function applyImageStyle() {
+                documentImageList.entries[currentIdx].fullImg.setAttribute("style", imageFillStyles[imageFillStyleIdx]);
             }
     
             function updateFromIdx() {
@@ -217,7 +232,7 @@ else {
                 }
                 if (documentImageList.entries && documentImageList.entries.length) {
                     documentImageList.entries[currentIdx].ensureFullImg();
-                    documentImageList.entries[currentIdx].fullImg.setAttribute("style", imageFillStyle);
+                    applyImageStyle();
                     effective.appendChild(documentImageList.entries[currentIdx].fullImg);
 
                     if (currentIdx + 1 < documentImageList.entries.length) {
@@ -246,6 +261,10 @@ else {
                 updateFromIdx();
             };
             controls.appendChild(prev);
+            
+            changeSize.textContent = "@ ";
+            changeSize.onclick = changeImageStyle;
+            controls.appendChild(changeSize);
 
             download.textContent = "\u25BC";
             download.onclick = function downloadHandler() {
