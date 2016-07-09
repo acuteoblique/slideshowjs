@@ -107,11 +107,13 @@ else {
             }
 
             function elementToEntry(originalElement) {
-                var fullUri = originalElement.parentElement.getAttribute("data-super-full-img") || originalElement.parentElement.href;
+                var hasDataSuperFullImg = originalElement.parentElement.getAttribute("data-super-full-img");
+                var fullUri = hasDataSuperFullImg || originalElement.parentElement.href;
                 return {
                     thumbnail: originalElement.src,
                     thumbnailImg: originalElement,
-                    full: fullUri
+                    full: fullUri,
+                    confident: !!hasDataSuperFullImg
                 };
             }
     
@@ -121,7 +123,7 @@ else {
                         thumbnailPath = getPathFromUri(pair.thumbnail),
                         pathMatches = fullPath && fullPath === thumbnailPath;
                         
-                    return pair.thumbnail && pair.full && pathMatches;
+                    return pair.thumbnail && pair.full && (pair.confident || pathMatches);
                 }
                 catch (e) { 
                     console.error("Error filtering: " + e);
