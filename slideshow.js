@@ -123,6 +123,12 @@ else {
                         thumbnailPath = getPathFromUri(pair.thumbnail),
                         pathMatches = fullPath && fullPath === thumbnailPath;
                         
+                    for (let parent = pair.thumbnailImg; parent; parent = parent.parentElement) {
+                        if (Array.from(parent.classList).indexOf("col-thumbs") > -1) {
+                            return false;
+                        }
+                    }
+                        
                     return pair.thumbnail && pair.full && (pair.confident || pathMatches);
                 }
                 catch (e) { 
