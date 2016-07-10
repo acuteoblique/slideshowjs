@@ -201,7 +201,6 @@ else {
                 prev = document.createElement("span"),
                 playPause = document.createElement("span"),
                 playPauseState = 0,
-                jumpTo = document.createElement("span"),
                 download = document.createElement("span"),
                 changeSize = document.createElement("span"),
                 position = document.createElement("span"),
@@ -274,15 +273,13 @@ else {
             changeSize.onclick = changeImageStyle;
             controls.appendChild(changeSize);
             
-            jumpTo.textContent = "# ";
-            jumpTo.onclick = function jumpToClickHandler() {
+            position.onclick = function jumpToClickHandler() {
                 var newIdx = parseInt(prompt("Enter index of image to jump to:"));
                 timer.reset();
                 removeCurrent();
                 currentIdx = newIdx;
                 updateFromIdx();
             };
-            controls.appendChild(jumpTo);
 
             download.textContent = "\u25BC";
             download.onclick = function downloadHandler() {
